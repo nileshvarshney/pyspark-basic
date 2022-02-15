@@ -1,12 +1,10 @@
-from unittest import case
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import explode,col, to_date
 spark = SparkSession.builder.master("local").appName("event processing").getOrCreate()
 spark.sparkContext.setLogLevel('ERROR')
 
 data = spark.read.json("datasets/source_event_data.json")
-# df2 = data.select("user.id", "user.ip", "user.session_id","event_id","action","url", "timestamp")
-# df2.show(10)
+
 data.createOrReplaceTempView("source_event_raw")
 
 spark.sql("""
@@ -27,10 +25,6 @@ spark.sql("""
     """
 ).createOrReplaceTempView("event_master")
 
-# df = spark.sql("select * from event_master")
-# df.printSchema()
-
-#test = spark.sql("select from_unixtime(unix_timestamp(timestamp, 'dd/MM/yyyy HH:mm:ss'),'yyyy/MM/dd hh:mm:ss') t from event_master") 
 activities_by_time = spark.sql("""
     select 
         from_unixtime(unix_timestamp(timestamp,"yyyy/MM/dd hh:mm:ss"),'yyyy/MM/dd hh') time_bucket,
